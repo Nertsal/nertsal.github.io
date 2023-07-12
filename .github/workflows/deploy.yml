@@ -1,0 +1,18 @@
+name: Deploy pages
+on: push
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-pages:
+    name: Deploy Github Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Zola Deploy
+        uses: shalzz/zola-deploy-action@v0.17.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_DIR: website
