@@ -7,8 +7,6 @@ permissions:
 jobs:
   deploy-pages:
     name: Deploy Github Pages
-    needs:
-      - build
     if: github.ref == 'refs/heads/main' && github.repository_owner == 'nertsal'
     runs-on: ubuntu-latest
     container: kuviman/geng
