@@ -4,6 +4,7 @@ mod geometry;
 use self::{camera3d::Camera3d, geometry::Plane};
 
 use geng::prelude::*;
+use geng_utils::conversions::Vec2RealConversions;
 use geometry::{CrossSectionVertex, Triangle, Vertex};
 
 #[derive(clap::Parser)]
@@ -82,6 +83,7 @@ impl Object {
 struct State {
     geng: Geng,
     assets: Rc<Assets>,
+    framebuffer_size: vec2<usize>,
     simulation_time: f32,
     next_spawn: f32,
     prefabs: Vec<Rc<ugli::VertexBuffer<Vertex>>>,
@@ -97,6 +99,7 @@ impl State {
         Self {
             simulation_time: 0.0,
             next_spawn: 0.0,
+            framebuffer_size: vec2(1, 1),
             camera3d: Camera3d {
                 fov: Angle::from_radians(70.0),
                 pos: vec3(6.0, 0.0, 10.0),
@@ -115,6 +118,14 @@ impl State {
             assets,
         }
     }
+
+    pub fn view(&self) -> Aabb2<f32> {
+        let view = vec2(
+            self.camera2d.fov * self.framebuffer_size.as_f32().aspect(),
+            self.camera2d.fov,
+        );
+        Aabb2::point(self.camera2d.center).extend_symmetric(view)
+    }
 }
 
 impl geng::State for State {
@@ -132,21 +143,20 @@ impl geng::State for State {
             self.next_spawn -= delta_time;
             let mut rng = thread_rng();
             while self.next_spawn < 0.0 {
-                // Final range: 0.1..=0.5
-                self.next_spawn += rng.gen_range(0.0..=1.0).sqr() * 0.4 + 0.1;
+                self.next_spawn += 0.1;
                 if let Some(geometry) = self.prefabs.choose(&mut rng) {
                     let scale = rng.gen_range(0.3..=1.0);
                     let pos_z = -scale * 2.0;
 
                     let pos = 'outer: {
-                        let mut pos = random_spawn(pos_z, &mut rng);
+                        let mut pos = random_spawn(pos_z, self.view(), &mut rng);
                         for _ in 0..5 {
                             let mut good = true;
                             for obj in &self.objects {
                                 let dist = (pos - obj.position).len();
                                 if dist < (scale + obj.scale) * 1.74 {
                                     // Try another one
-                                    pos = random_spawn(pos_z, &mut rng);
+                                    pos = random_spawn(pos_z, self.view(), &mut rng);
                                     good = false;
                                     break;
                                 }
@@ -235,6 +245,7 @@ impl geng::State for State {
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        self.framebuffer_size = framebuffer.size();
         ugli::clear(
             framebuffer,
             Some(self.assets.config.background_color),
@@ -279,11 +290,10 @@ impl geng::State for State {
     }
 }
 
-fn random_spawn(z: f32, rng: &mut impl Rng) -> vec3<f32> {
-    let radius = 7.0;
+fn random_spawn(z: f32, view: Aabb2<f32>, rng: &mut impl Rng) -> vec3<f32> {
     vec3(
-        rng.gen_range(-radius..=radius),
-        rng.gen_range(-radius..=radius),
+        rng.gen_range(view.min.x..=view.max.x),
+        rng.gen_range(view.min.y..=view.max.y),
         z,
     )
 }
