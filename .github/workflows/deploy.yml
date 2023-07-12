@@ -7,11 +7,24 @@ permissions:
 jobs:
   deploy-pages:
     name: Deploy Github Pages
+    needs:
+      - build
     if: github.ref == 'refs/heads/main' && github.repository_owner == 'nertsal'
     runs-on: ubuntu-latest
+    container: kuviman/geng
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          target: wasm32-unknown-unknown
+      - name: Build background
+        run: |
+          cargo geng build --release --target wasm32-unknown-unknown
+          mv target website/static/background
       - name: Zola Deploy
         uses: shalzz/zola-deploy-action@v0.17.2
         env:
