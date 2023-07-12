@@ -7,6 +7,7 @@ permissions:
 jobs:
   deploy-pages:
     name: Deploy Github Pages
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'nertsal'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,4 +17,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_DIR: .
-          PAGES_BRANCH: gh-pages
+          PAGES_BRANCH: nertsal-pages
