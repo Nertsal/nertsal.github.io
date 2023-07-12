@@ -21,8 +21,8 @@ jobs:
           target: wasm32-unknown-unknown
       - name: Build background
         run: |
-          cargo geng build --release --target wasm32-unknown-unknown
-          mv target website/static/background
+          cd background
+          cargo geng build --release --target wasm32-unknown-unknown --out-dir ../website/static/background
       - name: Zola Deploy
         uses: shalzz/zola-deploy-action@v0.17.2
         env:
