@@ -136,15 +136,17 @@ impl geng::State for State {
                 self.next_spawn += rng.gen_range(0.0..=1.0).sqr() * 0.4 + 0.1;
                 if let Some(geometry) = self.prefabs.choose(&mut rng) {
                     let scale = rng.gen_range(0.3..=1.0);
+                    let pos_z = -scale * 2.0;
+
                     let pos = 'outer: {
-                        let mut pos = random_spawn(&mut rng);
+                        let mut pos = random_spawn(pos_z, &mut rng);
                         for _ in 0..5 {
                             let mut good = true;
                             for obj in &self.objects {
                                 let dist = (pos - obj.position).len();
                                 if dist < (scale + obj.scale) * 1.74 {
                                     // Try another one
-                                    pos = random_spawn(&mut rng);
+                                    pos = random_spawn(pos_z, &mut rng);
                                     good = false;
                                     break;
                                 }
@@ -228,7 +230,7 @@ impl geng::State for State {
                 obj.rotate_y(Angle::from_degrees(45.0 * delta_time));
             }
             // Delete far objects
-            self.objects.retain(|obj| obj.position.z < 5.0);
+            self.objects.retain(|obj| obj.position.z < obj.scale * 2.0);
         }
     }
 
@@ -277,12 +279,12 @@ impl geng::State for State {
     }
 }
 
-fn random_spawn(rng: &mut impl Rng) -> vec3<f32> {
+fn random_spawn(z: f32, rng: &mut impl Rng) -> vec3<f32> {
     let radius = 7.0;
     vec3(
         rng.gen_range(-radius..=radius),
         rng.gen_range(-radius..=radius),
-        -5.0,
+        z,
     )
 }
 
