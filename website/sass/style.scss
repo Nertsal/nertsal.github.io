@@ -30,10 +30,12 @@ body {
 .block-container {
   position: absolute;
   overflow-y: scroll;
+  overflow-x: visible;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  font-size: min(20px, 3vh, 3vw);
 }
 
 .container {
@@ -45,29 +47,34 @@ body {
   border-radius: 2.5em;
   border-color: $border-color;
   color: $text-color;
-  font-size: 20px;
 }
 
 .cool-container {
-  height: 8em;
-  margin: 1.5em 2.5em;
+  overflow: hidden;
+  max-width: min(80%, 50em);
+  height: 10em;
+  margin: 1.5em auto;
   display: flex;
+  background-color: $background-color;
   border: solid;
+  border-radius: 2em;
   border-color: $border-secondary-color;
+  color: $text-color;
 }
 
 .cool-logo-container {
+  margin: auto 0;
   min-width: 40%;
-  max-width: 40%;
+  width: 40%;
+  height: 100%;
 }
 
 .cool-logo {
   display: block;
   margin: auto auto;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .horizontal {
@@ -80,7 +87,7 @@ body {
 }
 
 .pfp {
-  width: 10em;
+  width: min(10em, 40%);
   height: 10em;
   border-radius: 50%;
   margin: 1em;
