@@ -83,6 +83,7 @@ body {
 
 .pfp-container {
   display: flex;
+  font-size: 1.2em;
 }
 
 .title {
@@ -97,8 +98,8 @@ body {
   margin: 1em;
 }
 
-// For small screens
-@media (max-width: 800px) {
+// For vertical screens
+@media (max-aspect-ratio: 1/1) {
   .pfp-container {
     flex-direction: column;
     text-align: center;
