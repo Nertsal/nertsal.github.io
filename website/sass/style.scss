@@ -11,6 +11,21 @@ html {
 
 body {
   position: absolute;
+  color: $text-color;
+}
+
+// Unvisited link
+a:link {
+  color: #b2675e;
+}
+a:visited {
+  color: #3b7080;
+}
+a:hover {
+  color: #e76f51;
+}
+a:active {
+  color: #3b7080;
 }
 
 #background-container {
@@ -77,6 +92,11 @@ body {
   object-fit: contain;
 }
 
+.text-block {
+  margin: 0 1em;
+  overflow: scroll;
+}
+
 .cool-description {
   margin: auto 1em;
 }
@@ -91,11 +111,43 @@ body {
   margin: 1em;
 }
 
+.subtitle {
+  text-align: center;
+  margin: 0.5em;
+}
+
 .pfp {
   width: min(10em, 40%);
   height: 10em;
   border-radius: 50%;
   margin: 1em;
+}
+
+pre {
+  padding: 1rem;
+  overflow: auto;
+}
+// The line numbers already provide some kind of left/right padding
+pre[data-linenos] {
+  padding: 1rem 0;
+}
+pre table td {
+  padding: 0;
+}
+// The line number cells
+pre table td:nth-of-type(1) {
+  text-align: center;
+  user-select: none;
+}
+pre mark {
+  // If you want your highlights to take the full width.
+  display: block;
+  // The default background colour of a mark is bright yellow
+  background-color: rgba(254, 252, 232, 0.9);
+}
+pre table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
 // For vertical screens
