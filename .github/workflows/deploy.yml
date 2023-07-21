@@ -37,7 +37,7 @@ jobs:
           cd background
           cargo geng build --release --target wasm32-unknown-unknown
           cd ..
-          cp -r background/target/ website/static/background/
+          cp -r background/target/geng/ website/static/background/
       - name: Zola Deploy
         uses: shalzz/zola-deploy-action@v0.17.2
         env:
