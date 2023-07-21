@@ -21,7 +21,7 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            website/static/background
+            background/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
       - name: Install Rust toolchain
@@ -35,8 +35,9 @@ jobs:
       - name: Build background
         run: |
           cd background
-          cargo geng build --release --target wasm32-unknown-unknown --out-dir ../website/static/background
+          cargo geng build --release --target wasm32-unknown-unknown
           cd ..
+          cp -r background/target/ website/static/background/
       - name: Zola Deploy
         uses: shalzz/zola-deploy-action@v0.17.2
         env:
