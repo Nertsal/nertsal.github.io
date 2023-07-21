@@ -14,10 +14,14 @@
   <div id="background-container">
     <iframe id="background-iframe" src="/background/index.html" allowfullscreen="true"></iframe>
     <div class="block-container">
-      <div class="container" style="width:90%">
+      <div class="container" style="width: 90%; padding: 0.5em;">
         <h1 class="title">
           Welcome to Nertsite!
         </h1>
+        <div class="navigation-container">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="{{ get_url(path='@/blog/_index.md') }}">Blog</a>
+        </div>
       </div>
 
       {% block content %} {% endblock %}

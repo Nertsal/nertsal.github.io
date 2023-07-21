@@ -64,6 +64,17 @@ a:active {
   color: $text-color;
 }
 
+.navigation-container {
+  display: flex;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.nav-link {
+  margin: 0 1em;
+  font-size: 1.2em;
+}
+
 .cool-container {
   overflow: hidden;
   max-width: min(80%, 50em);
@@ -108,7 +119,6 @@ a:active {
 
 .title {
   text-align: center;
-  margin: 1em;
 }
 
 .subtitle {
