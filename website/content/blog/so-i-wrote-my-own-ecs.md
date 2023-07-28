@@ -3,29 +3,38 @@ title = "So I made my own ECS"
 date = 2023-07-20
 +++
 
-## How it started
+This article is aimed at people using Rust and interested in ECS.
 
-I've tried using different ECS libraries in the past, but they just didn't stick with me. I've always liked the idea, but something felt off.
+**Content Warning**: advanced Rust ahead.
+
+If you are only interested in the code, check the [example on GitHub](https://github.com/geng-engine/ecs/blob/main/examples/full.rs).
+
+**TLDR**; ECS is hard to debug, so what if we make entity archetypes static and checked at compile time? We can derive structs and queries using macros and keep user code close to being regular Rust.
+
+## The problem
+
+ECS (Entity Component System) is an architectural pattern widely used in game dev for performance and flexibility reasons. I've tried using different ECS libraries in the past, but they just didn't stick with me. I've always liked the idea, but something felt off.
 
 kuviman had a similar experience working with Bevy ECS, and, I think, he has summarized it well [in his devlog](https://kuviman.itch.io/linksider/devlog/520806/i-tried-bevy-for-the-first-time-for-a-game-jam).
+
+ECS goes against the explicitness and type safety of Rust. With entities being dynamic it practically turns into a dynamically typed language. Additionally, it makes it hard to know which entities get affected by the systems. It is often hard to debug why some specific entity is not behaving in the way you expect, often just because of a missing component.
 
 ECS just gets too dynamic and hard to debug.
 
 ## The idea
 
-So what if we take the idea of separating data, but keep it as static as possible? What if the archetypes were static? What if the queries were checked at compile time? Is that possible?
-
-Turns out, the answer is yes?
+So what if we take the idea of separating data, but make archetypes static? What if the queries were checked at compile time?
 
 So let's dive right into what I've made.
-
-**Content Warning**: advanced Rust ahead.
 
 ## Archetypes
 
 This part is basically a generic version of [soa_derive](https://docs.rs/soa_derive/0.13.0/soa_derive/).
 
-Archetypes are defined as normal Rust struct's, with a derive macro:
+In ECS, an archetype is a collection of entities that share the same components. They are used to improve query performance. Usually, entities change their archetypes as you add or remove components.
+
+In our case, archetypes are made static and defined by the user, so they can be checked at compile time.
+Archetypes are defined as normal Rust structs, with a derive macro:
 ```rust
 #[derive(SplitFields)]
 struct Particle {
@@ -34,30 +43,31 @@ struct Particle {
 }
 ```
 
-The `SplitFields` derive macro generates a _struct of ~~arrays~~ storages_:
+The name indicates the underlying meaning: that we just split the fields into their own storages, instead of having them all in the same struct.
+So, the `SplitFields` derive macro generates a *struct of ~~arrays~~ storages*:
 ```rust
 struct ParticleStructOf<F: StorageFamily> {
-    pub position: F::Storage<(f32, f32)>,
-    pub lifetime: F::Storage<Option<f32>>,
+    position: F::Storage<(f32, f32)>,
+    lifetime: F::Storage<Option<f32>>,
 }
 ```
 
-`StorageFamily` is essentially ~~a [functor](https://wiki.haskell.org/Functor)~~ a trait for collections that can create new entries and access them by unique id's.
+`StorageFamily` is essentially ~~a [functor](https://wiki.haskell.org/Functor)~~ a trait for collections into which you can insert new items and access items by unique ids.
 
-This struct can then magically be used without knowing it's name:
+This struct can then magically be used without knowing its name:
 ```rust
 struct World {
     particles: StructOf<Arena<Particle>>,
 }
 ```
 
-You can read this exactly as it is: `particles` are a struct of arena's for `Particle` (as opposed to an arena of structs `Particle`).
+You can read this exactly as it is: `particles` field is a *struct of arenas for `Particle`* (as opposed to an *arena of structs `Particle`*).
 
-`Arena` here is a collection that implements the `Storage` trait and is of the `ArenaFamily` storage family. You can use any other storage (or even your own), like a `Vec` or a `HashStorage`, but `Arena` should be good for most cases.
+`Arena` here is a collection that implements the `Storage` trait. You can use any other storage (or even your own), like a `Vec` or a `HashStorage`, but `Arena` should be good for most cases.
 
-## Using `StructOf`
+## Creating and removing entities
 
-`StructOf` acts as a wrapper around the particular struct's (in our example, the `ParticleStructOf`). It provides the methods to push a new entity, and to get or remove an entity by its id. The push and remove methods take and return, respectively, the user's struct (a `Particle`), so all components must be initialized.
+`StructOf` acts as a wrapper around a particular struct (in our example, `ParticleStructOf`). It provides the methods to insert a new entity, and to get or remove an entity by its id. The push and remove methods take and return, respectively, the user's struct (a `Particle`), so all components must be initialized.
 ```rust
 let id = world.particles.insert(Particle {
     position: (1.0, -0.5),
@@ -67,7 +77,7 @@ let id = world.particles.insert(Particle {
 let particle: Particle = world.remove(id).unwrap();
 ```
 
-`StructOf` is actually just a type alias for a more complicated type.
+**Technical note**: `StructOf` is actually just a type alias for a more complicated type.
 ```rust
 type StructOf<S: StructOfAble> = <S::Struct as SplitFields<S::Family>>::StructOf;
 ```
@@ -83,19 +93,27 @@ With the data in-place it is time to have a nice look at it.
 Essentially, querying has 3 steps:
   1. Collect references to the storages containing the queried components.
   2. Construct an iterator over the entities.
-  3. Combine the queried components into the target view struct.
+  3. Combine the queried components into the target view struct (or tuple).
 
 You can do all steps yourself, but the library does provided shortcuts.
 
 The `query!` macro can be used to query components *immutably* (current limitation) into a tuple or into a struct:
 ```rust
+// Querying into a tuple
+for particle in query!(world.particles, (&position, &lifetime.Get.Some)) {
+    println!("{:?}", particle);
+}
+
+// Querying into a struct
+
+// 1. define the struct
 #[derive(Debug)]
 struct PartRef<'a> {
     position: &'a (f32, f32),
     lifetime: &'a f32,
 }
 
-// Querying into a struct
+// 2. query
 for particle in query!(
   world.particles,
   PartRef {
@@ -105,12 +123,11 @@ for particle in query!(
 ) {
     println!("{:?}", particle);
 }
-
-// Querying into a tuple
-for particle in query!(world.particles, (&position, &lifetime.Get.Some)) {
-    println!("{:?}", particle);
-}
 ```
+
+The syntax is mostly identical to normal tuple and struct instantiations with a little change in the field access. I won't go into details about how it is implemented, but you can try expanding the macros and looking at the generated code.
+
+Ok, so...
 
 ## WTF is `lifetime.Get.Some`
 
@@ -130,7 +147,11 @@ if let Some(((x, y),)) = get!(world.particles, id, (&mut position)) {
 }
 ```
 
-## Nested archetypes
+## Extra features
+
+These were the basics of working with the library, but there are more useful features and details.
+
+### Nested archetypes
 
 You can also nest one archetype inside another one with a simple macro attribute:
 ```rust
@@ -147,6 +168,10 @@ for (radius, position) in query!(world.explosions, (&radius, &particle.position)
 ```
 
 The resulting structure then has every field, including ones in the nested struct, in its own storage. And you can nest as many struct's as you want.
+
+### Splitting mutable access
+
+TODO
 
 ## Conclusion
 
