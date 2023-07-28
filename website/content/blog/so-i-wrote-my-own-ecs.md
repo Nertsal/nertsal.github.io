@@ -37,18 +37,22 @@ In our case, archetypes are made static and defined by the user, so they can be 
 Archetypes are defined as normal Rust structs, with a derive macro:
 ```rust
 #[derive(SplitFields)]
-struct Particle {
+struct Unit {
     position: (f32, f32),
-    lifetime: Option<f32>,
+    health: f32,
+    tick: usize,
+    damage: Option<f32>,
 }
 ```
 
 The name indicates the underlying meaning: that we just split the fields into their own storages, instead of having them all in the same struct.
 So, the `SplitFields` derive macro generates a *struct of ~~arrays~~ storages*:
 ```rust
-struct ParticleStructOf<F: StorageFamily> {
+struct UnitStructOf<F: StorageFamily> {
     position: F::Storage<(f32, f32)>,
-    lifetime: F::Storage<Option<f32>>,
+    health: F::Storage<f32>,
+    tick: F::Storage<usize>,
+    damage: F::Storage<Option<f32>>,
 }
 ```
 
@@ -57,24 +61,26 @@ struct ParticleStructOf<F: StorageFamily> {
 This struct can then magically be used without knowing its name:
 ```rust
 struct World {
-    particles: StructOf<Arena<Particle>>,
+    units: StructOf<Arena<Unit>>,
 }
 ```
 
-You can read this exactly as it is: `particles` field is a *struct of arenas for `Particle`* (as opposed to an *arena of structs `Particle`*).
+You can read this exactly as it is: `units` field is a *struct of arenas for `Unit`* (as opposed to an *arena of structs `Unit`*).
 
 `Arena` here is a collection that implements the `Storage` trait. You can use any other storage (or even your own), like a `Vec` or a `HashStorage`, but `Arena` should be good for most cases.
 
 ## Creating and removing entities
 
-`StructOf` acts as a wrapper around a particular struct (in our example, `ParticleStructOf`). It provides the methods to insert a new entity, and to get or remove an entity by its id. The push and remove methods take and return, respectively, the user's struct (a `Particle`), so all components must be initialized.
+`StructOf` acts as a wrapper around a particular struct (in our example, `UnitStructOf`). It provides the methods to insert a new entity, and to get or remove an entity by its id. The push and remove methods take and return, respectively, the user's struct (a `Unit`), so all components must be initialized.
 ```rust
-let id = world.particles.insert(Particle {
-    position: (1.0, -0.5),
-    lifetime: Some(1.0),
+let id = world.units.insert(Unit {
+    pos: (0.0, 0.0),
+    health: 10.0,
+    tick: 7,
+    damage: None,
 });
 
-let particle: Particle = world.remove(id).unwrap();
+let unit: Unit = world.units.remove(id).unwrap();
 ```
 
 **Technical note**: `StructOf` is actually just a type alias for a more complicated type.
@@ -82,9 +88,9 @@ let particle: Particle = world.remove(id).unwrap();
 type StructOf<S: StructOfAble> = <S::Struct as SplitFields<S::Family>>::StructOf;
 ```
 
-Here you can see the *magic* that allows us to not specify the final `ParticleStructOf`. `StructOfAble` is implemented for all storages for each component type. So, `S` here is `Arena<Particle>`, `S::Struct` is `Particle`, and then `Particle::StructOf` is `ParticleStructOf` (specified by the derive macro).
+Here you can see the *magic* that allows us to not specify the final `ParticleStructOf`. `StructOfAble` is implemented for all storages for each component type. So, `S` here is `Arena<Unit>`, `S::Struct` is `Unit`, and then `Unit::StructOf` is `UnitStructOf` (specified by the derive macro).
 
-So, in the end the type expands into `ParticleStructOf<ArenaFamily>`.
+So, in the end the type expands into `UnitStructOf<ArenaFamily>`.
 
 ## Querying
 
@@ -97,31 +103,32 @@ Essentially, querying has 3 steps:
 
 You can do all steps yourself, but the library does provided shortcuts.
 
-The `query!` macro can be used to query components *immutably* (current limitation) into a tuple or into a struct:
+The `query!` macro can be used to query components *immutably* (current limitation) into a tuple or into a struct.
+For example, let's query units that have some damage (not `None`), and also get their position.
 ```rust
 // Querying into a tuple
-for particle in query!(world.particles, (&position, &lifetime.Get.Some)) {
-    println!("{:?}", particle);
+for unit in query!(world.units, (&position, &damage.Get.Some)) {
+    println!("{:?}", unit);
 }
 
 // Querying into a struct
 
 // 1. define the struct
 #[derive(Debug)]
-struct PartRef<'a> {
+struct UnitRef<'a> {
     position: &'a (f32, f32),
-    lifetime: &'a f32,
+    damage: &'a f32,
 }
 
 // 2. query
-for particle in query!(
-  world.particles,
-  PartRef {
+for unit in query!(
+  world.units,
+  UnitRef {
     position,
-    lifetime: &lifetime.Get.Some,
+    damage: &damage.Get.Some,
   }
 ) {
-    println!("{:?}", particle);
+    println!("{:?}", unit);
 }
 ```
 
@@ -139,43 +146,44 @@ You could also specify the position access as `position: &position.Get` or `posi
 
 ## Mutating data
 
-At the moment, the `query!` macro does not allow mutable access (due to complications with the borrow checker), but the `get!` macro does. It has all the same syntax, just with an additional `id` parameter:
+At the moment, the `query!` macro does not allow mutable access (due to complications with the borrow checker), but the `get!` macro does. It has all the same syntax, just with an additional `id` parameter. For example, let's reduce health of all units by 5:
 ```rust
-if let Some(((x, y),)) = get!(world.particles, id, (&mut position)) {
-  *x += 1;
-  println!("{:?}", (x, y));
+for id in world.units.ids() {
+  let (health,) = get!(world.units, id, (&mut health)).unwrap();
+  *health -= 5.0;
 }
 ```
 
-## Extra features
-
-These were the basics of working with the library, but there are more useful features and details.
-
-### Nested archetypes
+## Nested archetypes
 
 You can also nest one archetype inside another one with a simple macro attribute:
 ```rust
 #[derive(SplitFields)]
-struct Explosion {
-  radius: f32,
-  #[split(nested)]
-  particle: Particle,
+struct Corpse {
+    #[split(nested)]
+    unit: Unit,
+    time: f32,
 }
 
-for (radius, position) in query!(world.explosions, (&radius, &particle.position)) {
+for (time, position) in query!(world.corpses, (&time, &unit.position)) {
   // ...
 }
 ```
 
 The resulting structure then has every field, including ones in the nested struct, in its own storage. And you can nest as many struct's as you want.
 
-### Splitting mutable access
+## Extra details
 
-TODO
+These were the basics of working with the library, but there are more details on how to make use of the features:
+- Mutably iterating over different components at once: can easily be checked by the borrow checker since they are just fields in a struct.
+- Querying the whole nested storage.
+- Combining (chaining) queries over different archetypes.
+
+I won't go over them here, but you can see the code in the [example](https://github.com/geng-engine/ecs/blob/main/examples/full.rs).
 
 ## Conclusion
 
-That was a rough introduction into what I've been working on lately. If you are interested in the idea, you can read a more complete [example on GitHub](https://github.com/geng-engine/ecs/blob/main/examples/full.rs). I also have a jam game made with this library: [Horns of Combustion](https://github.com/Nertsal/horns-of-combustion/tree/dev).
+That was a rough introduction into what I've been working on lately. If you like the idea and still want to see more, I also have a jam game made with this library: [Horns of Combustion](https://github.com/Nertsal/horns-of-combustion/tree/dev).
 
 The project still doesn't have a name, so I'm open to suggestions. It is also not on [crates.io](https://crates.io/) yet, but if anyone is interested and I come up with a name, I will upload it. Let me know :)
 
