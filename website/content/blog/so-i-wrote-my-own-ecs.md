@@ -9,7 +9,7 @@ This article is aimed at people using Rust and interested in ECS.
 
 If you are only interested in the code, check the [example on GitHub](https://github.com/geng-engine/ecs/blob/main/examples/full.rs).
 
-**TLDR**; ECS is hard to debug, so what if we make entity archetypes static and checked at compile time? We can derive structs and queries using macros and keep user code close to being regular Rust.
+**TLDR**; ECS can be hard to debug, so what if we make entity archetypes static and checked at compile time? We can derive structs and queries using macros and keep user code close to being regular Rust.
 
 ## The problem
 
@@ -136,11 +136,11 @@ The syntax is mostly identical to normal tuple and struct instantiations with a 
 
 Ok, so...
 
-## WTF is `lifetime.Get.Some`
+## WTF is `damage.Get.Some`
 
 Ever heard of [optics](https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/a-little-lens-starter-tutorial)? This is a poor man's version of that.
 
-In simple terms, we access the **lifetime** storage, **get** the component for the entity, and access it only if the variant is **Some** (remember the component type is `Option<f32>`).
+In simple terms, we access the **damage** storage, **get** the component for the entity, and access it only if the variant is **Some** (remember the component type is `Option<f32>`).
 
 You could also specify the position access as `position: &position.Get` or `position: &position` if you wanted to rename a field or be more explicit.
 
