@@ -15,9 +15,9 @@ If you are only interested in the code, check the [example on GitHub](https://gi
 
 ECS (Entity Component System) is an architectural pattern widely used in game dev for performance and flexibility reasons. I've tried using different ECS libraries in the past, but they just didn't stick with me. I've always liked the idea, but something felt off.
 
-kuviman had a similar experience working with Bevy ECS, and, I think, he has summarized it well [in his devlog](https://kuviman.itch.io/linksider/devlog/520806/i-tried-bevy-for-the-first-time-for-a-game-jam).
+kuviman ([Bevy Jam #3](https://itch.io/jam/bevy-jam-3) winner) had a similar experience working with Bevy ECS, and, I think, he has summarized it well [in his devlog](https://kuviman.itch.io/linksider/devlog/520806/i-tried-bevy-for-the-first-time-for-a-game-jam).
 
-ECS goes against the explicitness and type safety of Rust. With entities being dynamic it practically turns into a dynamically typed language. Additionally, it makes it hard to know which entities get affected by the systems. It is often hard to debug why some specific entity is not behaving in the way you expect, often just because of a missing component.
+ECS goes against the explicitness and type safety of Rust. With entities being dynamic it practically turns into a dynamically typed language. Additionally, it can be hard to know which entities get affected by the systems. In my experience, it is often hard to debug why some specific entity is not behaving in the way you expect, often just because of a missing component.
 
 ECS just gets too dynamic and hard to debug.
 
