@@ -1,5 +1,6 @@
+# --out-dir ../website/static/background
 build:
-  cd background && cargo geng build --release --target wasm32-unknown-unknown --out-dir ../website/static/background
+  cd background && cargo geng build --release --platform web
   cp -r background/target website/static/background
   cd website && zola build
 
