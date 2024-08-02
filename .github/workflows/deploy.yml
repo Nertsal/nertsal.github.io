@@ -35,7 +35,7 @@ jobs:
       - name: Build background
         run: |
           cd background
-          cargo geng build --release --target wasm32-unknown-unknown
+          cargo geng build --release --platform web
           cd ..
           cp -r background/target/geng/ website/static/background/
       - name: Zola Deploy
