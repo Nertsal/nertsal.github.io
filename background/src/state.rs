@@ -1,5 +1,4 @@
 use crate::{
-    camera3d::Camera3d,
     geometry::{self, CrossSectionVertex, Plane, Triangle, Vertex},
     Assets,
 };
@@ -54,9 +53,7 @@ pub struct State {
     next_spawn: f32,
     prefabs: Vec<Rc<ugli::VertexBuffer<Vertex>>>,
     objects: Vec<Object>,
-    camera3d: Camera3d,
     camera2d: Camera2d,
-    paused: bool,
 }
 
 impl State {
@@ -66,12 +63,6 @@ impl State {
             simulation_time: 0.0,
             next_spawn: 0.0,
             framebuffer_size: vec2(1, 1),
-            camera3d: Camera3d {
-                fov: Angle::from_radians(70.0),
-                pos: vec3(6.0, 0.0, 10.0),
-                rot_h: Angle::from_degrees(30.0),
-                rot_v: Angle::ZERO,
-            },
             camera2d: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
@@ -79,7 +70,6 @@ impl State {
             },
             objects: Vec::new(),
             prefabs: vec![prefab(geometry::unit_cube_triangulated())],
-            paused: false,
             geng,
             assets,
         }
@@ -95,119 +85,65 @@ impl State {
 }
 
 impl geng::State for State {
-    fn handle_event(&mut self, event: geng::Event) {
-        if geng_utils::key::is_event_press(&event, [geng::Key::P]) {
-            self.paused = !self.paused;
-        }
-    }
-
     fn update(&mut self, delta_time: f64) {
         let delta_time = delta_time as f32;
 
-        if !self.paused {
-            self.simulation_time += delta_time;
-            self.next_spawn -= delta_time;
-            let mut rng = thread_rng();
-            while self.next_spawn < 0.0 {
-                self.next_spawn += 0.1;
-                if let Some(geometry) = self.prefabs.choose(&mut rng) {
-                    let scale = rng.gen_range(0.3..=1.0);
-                    let pos_z = -scale * 2.0;
+        self.simulation_time += delta_time;
+        self.next_spawn -= delta_time;
+        let mut rng = thread_rng();
+        while self.next_spawn < 0.0 {
+            self.next_spawn += 0.1;
+            if let Some(geometry) = self.prefabs.choose(&mut rng) {
+                let scale = rng.gen_range(0.3..=1.0);
+                let pos_z = -scale * 2.0;
 
-                    let pos = 'outer: {
-                        let mut pos = random_spawn(pos_z, self.view(), &mut rng);
-                        for _ in 0..5 {
-                            let mut good = true;
-                            for obj in &self.objects {
-                                let dist = (pos - obj.position).len();
-                                if dist < (scale + obj.scale) * 1.74 {
-                                    // Try another one
-                                    pos = random_spawn(pos_z, self.view(), &mut rng);
-                                    good = false;
-                                    break;
-                                }
-                            }
-                            if good {
-                                break 'outer Some(pos);
+                let pos = 'outer: {
+                    let mut pos = random_spawn(pos_z, self.view(), &mut rng);
+                    for _ in 0..5 {
+                        let mut good = true;
+                        for obj in &self.objects {
+                            let dist = (pos - obj.position).len();
+                            if dist < (scale + obj.scale) * 1.74 {
+                                // Try another one
+                                pos = random_spawn(pos_z, self.view(), &mut rng);
+                                good = false;
+                                break;
                             }
                         }
-                        None
-                    };
-
-                    if let Some(pos) = pos {
-                        let mut obj = Object::new(pos, geometry.clone());
-                        obj.orientation = vec3(
-                            rng.gen_range(-1.0..=1.0),
-                            rng.gen_range(-1.0..=1.0),
-                            rng.gen_range(-1.0..=1.0),
-                        );
-                        obj.roll = Angle::from_degrees(rng.gen_range(0.0..=360.0));
-                        obj.scale = scale;
-                        obj.color = self
-                            .assets
-                            .config
-                            .object_colors
-                            .choose(&mut rng)
-                            .copied()
-                            .unwrap_or(Rgba::WHITE);
-                        self.objects.push(obj);
+                        if good {
+                            break 'outer Some(pos);
+                        }
                     }
+                    None
+                };
+
+                if let Some(pos) = pos {
+                    let mut obj = Object::new(pos, geometry.clone());
+                    obj.orientation = vec3(
+                        rng.gen_range(-1.0..=1.0),
+                        rng.gen_range(-1.0..=1.0),
+                        rng.gen_range(-1.0..=1.0),
+                    );
+                    obj.roll = Angle::from_degrees(rng.gen_range(0.0..=360.0));
+                    obj.scale = scale;
+                    obj.color = self
+                        .assets
+                        .config
+                        .object_colors
+                        .choose(&mut rng)
+                        .copied()
+                        .unwrap_or(Rgba::WHITE);
+                    self.objects.push(obj);
                 }
             }
         }
 
-        let mut move_dir_x = 0.0;
-        let mut move_dir_z = 0.0;
-
-        if self.geng.window().is_key_pressed(geng::Key::A) {
-            move_dir_x -= 1.0;
+        for obj in &mut self.objects {
+            obj.position += vec3::UNIT_Z * 0.5 * delta_time;
+            obj.rotate_y(Angle::from_degrees(45.0 * delta_time));
         }
-        if self.geng.window().is_key_pressed(geng::Key::D) {
-            move_dir_x += 1.0;
-        }
-        if self.geng.window().is_key_pressed(geng::Key::S) {
-            move_dir_z -= 1.0;
-        }
-        if self.geng.window().is_key_pressed(geng::Key::W) {
-            move_dir_z += 1.0;
-        }
-
-        let mut look_dir = self.camera3d.look_dir();
-        look_dir.y = 0.0;
-
-        let side_dir = vec2(look_dir.x, look_dir.z);
-        let side_dir = side_dir.rotate_90();
-        let side_dir = vec3(side_dir.x, 0.0, side_dir.y);
-
-        let mut move_dir_y = 0.0;
-        if self.geng.window().is_key_pressed(geng::Key::Space) {
-            move_dir_y += 1.0;
-        }
-        if self.geng.window().is_key_pressed(geng::Key::ShiftLeft) {
-            move_dir_y -= 1.0;
-        }
-
-        let move_dir = look_dir * move_dir_z + side_dir * move_dir_x + vec3::UNIT_Y * move_dir_y;
-
-        self.camera3d.pos += move_dir * 5.0 * delta_time;
-
-        let mut rotate = 0.0;
-        if self.geng.window().is_key_pressed(geng::Key::Q) {
-            rotate += 1.0;
-        }
-        if self.geng.window().is_key_pressed(geng::Key::E) {
-            rotate -= 1.0;
-        }
-        self.camera3d.rot_h += Angle::from_degrees(rotate * 180.0 * delta_time);
-
-        if !self.paused {
-            for obj in &mut self.objects {
-                obj.position += vec3::UNIT_Z * 0.5 * delta_time;
-                obj.rotate_y(Angle::from_degrees(45.0 * delta_time));
-            }
-            // Delete far objects
-            self.objects.retain(|obj| obj.position.z < obj.scale * 2.0);
-        }
+        // Delete far objects
+        self.objects.retain(|obj| obj.position.z < obj.scale * 2.0);
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {

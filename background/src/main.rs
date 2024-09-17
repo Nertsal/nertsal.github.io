@@ -1,4 +1,3 @@
-mod camera3d;
 mod geometry;
 mod state;
 

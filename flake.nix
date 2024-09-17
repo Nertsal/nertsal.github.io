@@ -14,7 +14,25 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
-        libDeps = with pkgs; [
+        waylandDeps = with pkgs; [
+          libxkbcommon
+          wayland
+        ];
+        xorgDeps = with pkgs; [
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXi
+          xorg.libXrandr
+        ];
+        libDeps = with pkgs; waylandDeps ++ xorgDeps ++ [
+            alsa-lib
+            udev
+            libGL
+            xorg.libxcb
+            cmake
+            fontconfig
+            mesa
+            freeglut
         ];
         libPath = pkgs.lib.makeLibraryPath libDeps;
       in
@@ -22,6 +40,9 @@
       {
         devShells.default = mkShell {
           buildInputs = libDeps ++ [
+            gcc
+            openssl
+            pkg-config
             binaryen
             (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
