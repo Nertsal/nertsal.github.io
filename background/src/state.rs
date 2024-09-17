@@ -211,17 +211,29 @@ fn draw_flat_section(
         return;
     }
 
+    // Convert coordinate system
     let mirror_x = |v: vec2<f32>| vec2(-v.x, v.y);
     let mut chain: Vec<vec2<f32>> = cross_section
         .iter()
         .map(|v| mirror_x(v.projected))
         .collect();
+
+    // Optimize small sizes to look better
+    let mut width: f32 = 0.1;
+    let area = Aabb2::points_bounding_box(chain.iter().copied())
+        .expect("there are at least 3 points at this moment");
+    let radius = area.size() / 2.0;
+    width = width.min(radius.x).min(radius.y);
+
+    // Close the chain
     let mid = (chain[0] + chain[1]) / 2.0;
     chain.extend([chain[0], mid]);
     chain[0] = mid;
+
+    // Draw
     geng.draw2d().draw2d(
         framebuffer,
         camera,
-        &draw2d::Chain::new(Chain::new(chain), 0.1, color, 5),
+        &draw2d::Chain::new(Chain::new(chain), width, color, 5),
     );
 }
