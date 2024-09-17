@@ -38,7 +38,7 @@ jobs:
         run: |
           cd background
           cargo geng build --release --platform web
-          wasm-opt -Os -o target/background.wasm target/background.wasm
+          wasm-opt -Os -o target/geng/background.wasm target/geng/background.wasm
           cd ..
           cp -r background/target/geng/ website/static/background/
       - name: Zola Deploy
