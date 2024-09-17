@@ -12,3 +12,8 @@ serde = { version = "1", features = ["derive"] }
 
 [patch.crates-io]
 async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" }
+
+# Binary size optimizations
+[profile.release]
+lto = true
+# opt-level = 's'

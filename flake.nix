@@ -15,10 +15,6 @@
           inherit system overlays;
         };
         libDeps = with pkgs; [
-            # cmake
-            # fontconfig
-            # mesa
-            # freeglut
         ];
         libPath = pkgs.lib.makeLibraryPath libDeps;
       in
@@ -26,10 +22,7 @@
       {
         devShells.default = mkShell {
           buildInputs = libDeps ++ [
-            # gcc
-            # openssl
-            # pkg-config
-            # rust-bin.stable.latest.default
+            binaryen
             (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
               targets = [ "wasm32-unknown-unknown" ];
