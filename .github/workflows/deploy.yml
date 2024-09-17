@@ -31,7 +31,7 @@ jobs:
           profile: minimal
           target: wasm32-unknown-unknown
       - name: Install cargo-geng
-        run: cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng --force
+        run: cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng --rev 2600c848f4d91816f9f2ed83a4ad8900030be8d6
       - name: Build background
         run: |
           cd background
