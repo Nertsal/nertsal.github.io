@@ -3,7 +3,7 @@ title = "So I made my own ECS"
 date = 2023-07-20
 +++
 
-This article is aimed at people using Rust and interested in ECS.
+This blog post is aimed at people using Rust and interested in ECS.
 
 **Content Warning**: advanced Rust ahead.
 
