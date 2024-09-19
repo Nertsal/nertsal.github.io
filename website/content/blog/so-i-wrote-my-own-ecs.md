@@ -88,7 +88,7 @@ let monster: Monster = world.monsters.remove(id).unwrap();
 type StructOf<S: StructOfAble> = <S::Struct as SplitFields<S::Family>>::StructOf;
 ```
 
-Here you can see the *✧magic✧* that allows us to not specify the final `ParticleStructOf`. `StructOfAble` is implemented for all storages for each component type. So, `S` here is `Arena<Monster>`, `S::Struct` is `Monster`, and then `Monster::StructOf` is `MonsterStructOf` (specified by the derive macro).
+Here you can see the *✧magic✧* that allows us to not specify the final `MonsterStructOf`. `StructOfAble` is implemented for all storages for each component type. So, `S` here is `Arena<Monster>`, `S::Struct` is `Monster`, and then `Monster::StructOf` is `MonsterStructOf` (specified by the derive macro).
 
 So, in the end the type expands into `MonsterStructOf<ArenaFamily>`.
 
@@ -119,6 +119,7 @@ for (id, position, damage) in query!(
 // 1. define the struct
 #[derive(Debug)]
 struct MonsterRef<'a> {
+    id: Index,
     position: &'a (f32, f32),
     damage: &'a f32,
 }
@@ -127,6 +128,7 @@ struct MonsterRef<'a> {
 for (monster_id, monster) in query!(
   world.monsters,
   MonsterRef {
+    id,
     position,
     damage: &damage.Get.Some,
   }
