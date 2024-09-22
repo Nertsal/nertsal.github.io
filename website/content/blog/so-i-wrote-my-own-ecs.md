@@ -7,7 +7,7 @@ This blog post is aimed at people using Rust and interested in ECS.
 
 **Content Warning**: advanced Rust ahead.
 
-If you are only interested in the code, check the [example on GitHub](https://github.com/geng-engine/ecs/blob/main/examples/full.rs).
+If you are only interested in the code, check the [example on GitHub](https://github.com/Nertsal/stecs/blob/main/examples/full.rs).
 
 **TLDR**; ECS can be hard to debug, so what if we make entity archetypes static and checked at compile time? We can derive structs and queries using macros and keep user code close to being regular Rust.
 
@@ -174,11 +174,10 @@ These were the basics of working with the library, but there are more details on
 - Querying the whole nested storage.
 - Combining (chaining) queries over different archetypes.
 
-I won't go over them here, but you can see the code in the [example](https://github.com/geng-engine/ecs/blob/main/examples/full.rs).
+I won't go over them here, but you can see the code in the [example](https://github.com/Nertsal/stecs/blob/main/examples/full.rs).
 
 ## Conclusion
 
 That was a rough introduction into what I've been working on lately. If you like the idea and still want to see more, I also have a jam game made with this library: [Horns of Combustion](https://github.com/Nertsal/horns-of-combustion/tree/dev).
 
-The project still doesn't have a name, so I'm open to suggestions. It is also not on [crates.io](https://crates.io/) yet, but if anyone is interested and I come up with a name, I will upload it. Let me know :)
-
+See the project on [GitHub](https://github.com/Nertsal/stecs) and [crates.io](https://crates.io/crates/stecs).
