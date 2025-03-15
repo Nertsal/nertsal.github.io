@@ -37,10 +37,10 @@ jobs:
       - name: Build background
         run: |
           cd background
-          cargo geng build --release --platform web
-          wasm-opt -Os -o target/geng/background.wasm target/geng/background.wasm
+          cargo geng build --release --platform web --out-dir target
+          wasm-opt -Os -o target/background.wasm target/background.wasm
           cd ..
-          cp -r background/target/geng/ website/static/background/
+          cp -r background/target/ website/static/background/
       - name: Zola Deploy
         uses: shalzz/zola-deploy-action@v0.17.2
         env:
