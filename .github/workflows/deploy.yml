@@ -30,15 +30,15 @@ jobs:
           toolchain: stable
           profile: minimal
           target: wasm32-unknown-unknown
-      - name: Install WASM tools
-        run: sudo apt-get update && sudo apt-get install binaryen
+      # - name: Install WASM tools
+      #   run: sudo apt-get update && sudo apt-get install binaryen
       - name: Install cargo-geng
         run: cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng --rev 8e869f6508d39890a6f84122fb1c7f86a9da18da
       - name: Build background
         run: |
           cd background
           cargo geng build --release --platform web --out-dir target
-          wasm-opt -Os -o target/background.wasm target/background.wasm
+          # wasm-opt -Os -o target/background.wasm target/background.wasm
           cd ..
           cp -r background/target/ website/static/background/
       - name: Zola Deploy
