@@ -33,7 +33,7 @@ jobs:
       # - name: Install WASM tools
       #   run: sudo apt-get update && sudo apt-get install binaryen
       - name: Install cargo-geng
-        run: cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng --rev 8e869f6508d39890a6f84122fb1c7f86a9da18da --force
+        run: cargo install cargo-geng --git https://github.com/geng-engine/cargo-geng --rev aa2c2242d7024734f3d5f6e5c9879a19c01b100a
       - name: Build background
         run: |
           cd background
