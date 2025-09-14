@@ -1,0 +1,10 @@
+/home/runner/work/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/switch_resume-345fd208bf2c29a7.d: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/home/runner/work/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libswitch_resume-345fd208bf2c29a7.rlib: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/home/runner/work/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libswitch_resume-345fd208bf2c29a7.rmeta: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs:

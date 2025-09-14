@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nertsite</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" integrity="sha384-QYIZto+st3yW+o8+5OHfT6S482Zsvz2WfOzpFSXMF9zqeLcFV0/wlZpMtyFcZALm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.css">
+</head>
+
+<body>
+  <div id="background-container">
+    <iframe id="background-iframe" src="/background/index.html" allowfullscreen="true"></iframe>
+    <div class="block-container">
+      <div class="container" style="width: 90%; padding: 0.5em;">
+        <h1 class="title">
+          Welcome to Nertsite!
+        </h1>
+        <div class="navigation-container">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="https://nertsal.github.io/blog/">Blog</a>
+        </div>
+      </div>
+
+      
+<div class="container" style="margin-top: 2em; padding: 1em;">
+  <h1 class="title">
+    So I made my own ECS
+  </h1>
+  <p class="subtitle">
+    <strong>2024-09-19</strong>
+  </p>
+</div>
+
+<div class="container" style="width: min(80%, 50em)">
+  <div class="text-block">
+    <p>This blog post is aimed at people using Rust and interested in ECS.</p>
+<p><strong>Content Warning</strong>: advanced Rust ahead.</p>
+<p>If you are only interested in the code, check the <a href="https://github.com/Nertsal/stecs/blob/main/examples/full.rs">example on GitHub</a>.</p>
+<p><strong>TLDR</strong>; ECS can be hard to debug, so what if we make entity archetypes static and checked at compile time? We can derive structs and queries using macros and keep user code close to being regular Rust.</p>
+<h2 id="the-problem">The problem</h2>
+<p>ECS (Entity Component System) is an architectural pattern widely used in game dev for performance and flexibility reasons. I've tried using several ECS libraries in the past, but they just didn't stick with me. I have always liked the idea, but something felt off.</p>
+<p>kuviman (<a href="https://itch.io/jam/bevy-jam-3">Bevy Jam #3</a> winner) had a similar experience working with Bevy ECS, and, I think, he has summarized it well <a href="https://kuviman.itch.io/linksider/devlog/520806/i-tried-bevy-for-the-first-time-for-a-game-jam">in his devlog</a>.</p>
+<p>To paraphrase: ECS goes against the explicitness and type safety of Rust. With entities being dynamic it practically turns into a dynamically typed language. Additionally, it can be hard to know which entities get affected by the systems. In my experience, it is often hard to debug why some specific entity is not behaving in the way you expect, often just because of a missing component.</p>
+<p>ECS just gets too dynamic and hard to debug.</p>
+<h2 id="the-idea">The idea</h2>
+<p>So what if we take the idea of separating data, but make archetypes static? What if the queries were checked at compile time preventing common bugs?</p>
+<p>Let's dive right into what I've made.</p>
+<h2 id="archetypes">Archetypes</h2>
+<p>This part is basically a generic version of <a href="https://docs.rs/soa_derive/0.13.0/soa_derive/">soa_derive</a>.</p>
+<p>In ECS, an archetype is a collection of entities that share the same components. They are used to improve query performance. Usually, entities change their archetypes as you add or remove components.</p>
+<p>In our case, archetypes are made static and defined by the user, so they can be checked at compile time.
+Archetypes are defined as normal Rust structs, with a derive macro:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">derive</span><span>(SplitFields)]
+</span><span style="color:#b48ead;">struct </span><span>Monster {
+</span><span>    </span><span style="color:#bf616a;">position</span><span>: (</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>),
+</span><span>    </span><span style="color:#bf616a;">health</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">tick</span><span>: </span><span style="color:#b48ead;">usize</span><span>,
+</span><span>    </span><span style="color:#bf616a;">damage</span><span>: Option&lt;</span><span style="color:#b48ead;">f32</span><span>&gt;,
+</span><span>}
+</span></code></pre>
+<p>The name of the macro indicates the underlying meaning: that we just split the fields into their own storages, instead of having them all in the same struct.
+So, the <code>SplitFields</code> derive macro generates a <em>struct of <del>arrays</del> storages</em>:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">struct </span><span>MonsterStructOf&lt;F: StorageFamily&gt; {
+</span><span>    </span><span style="color:#bf616a;">position</span><span>: </span><span style="color:#b48ead;">F::</span><span>Storage&lt;(</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>)&gt;,
+</span><span>    </span><span style="color:#bf616a;">health</span><span>: </span><span style="color:#b48ead;">F::</span><span>Storage&lt;</span><span style="color:#b48ead;">f32</span><span>&gt;,
+</span><span>    </span><span style="color:#bf616a;">tick</span><span>: </span><span style="color:#b48ead;">F::</span><span>Storage&lt;</span><span style="color:#b48ead;">usize</span><span>&gt;,
+</span><span>    </span><span style="color:#bf616a;">damage</span><span>: </span><span style="color:#b48ead;">F::</span><span>Storage&lt;Option&lt;</span><span style="color:#b48ead;">f32</span><span>&gt;&gt;,
+</span><span>}
+</span></code></pre>
+<p><code>StorageFamily</code> is essentially <del>a <a href="https://wiki.haskell.org/Functor">functor</a></del> a trait for collections into which you can insert new items and access items by unique ids.</p>
+<p>This struct can then <em>✧magically✧</em> be used without knowing its name:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">struct </span><span>World {
+</span><span>    </span><span style="color:#bf616a;">monsters</span><span>: StructOf&lt;Arena&lt;Monster&gt;&gt;,
+</span><span>}
+</span></code></pre>
+<p>You can read this exactly as it is: <code>monsters</code> field is a <em>struct of arenas for <code>Monster</code></em> (as opposed to an <em>arena of structs <code>Monster</code></em>).</p>
+<p><code>Arena</code> here is a collection that implements the <code>Storage</code> trait. You can use any other storage (or even your own), like a <code>Vec</code> or a <code>HashStorage</code>, but <code>Arena</code> should be good for most cases.</p>
+<h2 id="creating-and-removing-entities">Creating and removing entities</h2>
+<p><code>StructOf</code> acts as a wrapper around a particular struct (in our example, <code>MonsterStructOf</code>). It provides the methods to insert a new entity, and to get or remove an entity by its id. The push and remove methods take and return, respectively, the user's struct (a <code>Monster</code>), so all components must be initialized.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let</span><span> id = world.monsters.</span><span style="color:#96b5b4;">insert</span><span>(Monster {
+</span><span>    position: (</span><span style="color:#d08770;">0.0</span><span>, </span><span style="color:#d08770;">0.0</span><span>),
+</span><span>    health: </span><span style="color:#d08770;">10.0</span><span>,
+</span><span>    tick: </span><span style="color:#d08770;">7</span><span>,
+</span><span>    damage: None,
+</span><span>});
+</span><span>
+</span><span style="color:#b48ead;">let</span><span> monster: Monster = world.monsters.</span><span style="color:#96b5b4;">remove</span><span>(id).</span><span style="color:#96b5b4;">unwrap</span><span>();
+</span></code></pre>
+<p><strong>Technical note</strong>: <code>StructOf</code> is actually just a type alias for a more complicated type.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">type </span><span>StructOf&lt;S: StructOfAble&gt; = &lt;</span><span style="color:#b48ead;">S::</span><span>Struct as SplitFields&lt;</span><span style="color:#b48ead;">S::</span><span>Family&gt;&gt;::StructOf;
+</span></code></pre>
+<p>Here you can see the <em>✧magic✧</em> that allows us to not specify the final <code>MonsterStructOf</code>. <code>StructOfAble</code> is implemented for all storages for each component type. So, <code>S</code> here is <code>Arena&lt;Monster&gt;</code>, <code>S::Struct</code> is <code>Monster</code>, and then <code>Monster::StructOf</code> is <code>MonsterStructOf</code> (specified by the derive macro).</p>
+<p>So, in the end the type expands into <code>MonsterStructOf&lt;ArenaFamily&gt;</code>.</p>
+<h2 id="querying">Querying</h2>
+<p>With the data in-place it is time to have a nice look at it.</p>
+<p>Essentially, querying has 3 steps:</p>
+<ol>
+<li>Collect references to the storages containing the queried components.</li>
+<li>Construct an iterator over the entities.</li>
+<li>Combine the queried components into the target view struct (or tuple).</li>
+</ol>
+<p>You can do all steps yourself, but the library does provided shortcuts.</p>
+<p>The <code>query!</code> macro can be used to query components into a tuple or into a struct.
+For example, let's query monsters that have some damage (not <code>None</code>), and also get a mutable access to their position and id.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#65737e;">// Querying into a tuple
+</span><span style="color:#b48ead;">for </span><span>(id, position, damage) in query!(
+</span><span>    world.monsters,
+</span><span>    (id, &amp;</span><span style="color:#b48ead;">mut</span><span> position, &amp;damage.Get.Some)
+</span><span>) {
+</span><span>    println!(&quot;</span><span style="color:#a3be8c;">[</span><span style="color:#d08770;">{:?}</span><span style="color:#a3be8c;">] at </span><span style="color:#d08770;">{:?}</span><span style="color:#a3be8c;">, dealing </span><span style="color:#d08770;">{}</span><span style="color:#a3be8c;"> damage</span><span>&quot;, id, position, damage);
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// Querying into a struct
+</span><span>
+</span><span style="color:#65737e;">// 1. define the struct
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Debug)]
+</span><span style="color:#b48ead;">struct </span><span>MonsterRef&lt;</span><span style="color:#b48ead;">&#39;a</span><span>&gt; {
+</span><span>    </span><span style="color:#bf616a;">id</span><span>: Index,
+</span><span>    </span><span style="color:#bf616a;">position</span><span>: &amp;</span><span style="color:#b48ead;">&#39;a </span><span>(</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>),
+</span><span>    </span><span style="color:#bf616a;">damage</span><span>: &amp;</span><span style="color:#b48ead;">&#39;a f32</span><span>,
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// 2. query
+</span><span style="color:#b48ead;">for </span><span>(monster_id, monster) in query!(
+</span><span>  world.monsters,
+</span><span>  MonsterRef {
+</span><span>    id,
+</span><span>    position,
+</span><span>    damage: &amp;damage.Get.Some,
+</span><span>  }
+</span><span>) {
+</span><span>    println!(&quot;</span><span style="color:#d08770;">{:?}</span><span>&quot;, monster);
+</span><span>}
+</span></code></pre>
+<p>The syntax is mostly identical to normal tuple and struct instantiations with a little change in the field access. I won't go into details about how it is implemented, but you can try expanding the macros and looking at the generated code.</p>
+<p>Ok, so...</p>
+<h2 id="wtf-is-damage-get-some">WTF is <code>damage.Get.Some</code></h2>
+<p>Ever heard of <a href="https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/a-little-lens-starter-tutorial">optics</a>? This is a poor man's version of that.</p>
+<p>In simple terms, we access the <strong>damage</strong> storage, <strong>get</strong> the component for the entity, and access it only if the variant is <strong>Some</strong> (remember the component type is <code>Option&lt;f32&gt;</code>).</p>
+<p>You could also specify the position access as <code>position: &amp;position.Get</code> or <code>position: &amp;position</code> if you wanted to rename a field or be more explicit.</p>
+<h2 id="nested-archetypes">Nested archetypes</h2>
+<p>You can also nest one archetype inside another one with a simple macro attribute:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">derive</span><span>(SplitFields)]
+</span><span style="color:#b48ead;">struct </span><span>Corpse {
+</span><span>    #[</span><span style="color:#bf616a;">split</span><span>(nested)]
+</span><span>    </span><span style="color:#bf616a;">monster</span><span>: Monster,
+</span><span>    </span><span style="color:#bf616a;">time</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">for </span><span>(time, position) in query!(world.corpses, (&amp;time, &amp;monster.position)) {
+</span><span>  </span><span style="color:#65737e;">// ...
+</span><span>}
+</span></code></pre>
+<p>The resulting structure then has every field, including ones in the nested struct, in its own storage. And you can nest as many struct's as you want.</p>
+<h2 id="extra-details">Extra details</h2>
+<p>These were the basics of working with the library, but there are more details on how to make use of the features:</p>
+<ul>
+<li>Mutably iterating over different components at once: can easily be checked by the borrow checker since they are just fields in a struct.</li>
+<li>Querying the whole nested storage.</li>
+<li>Combining (chaining) queries over different archetypes.</li>
+</ul>
+<p>I won't go over them here, but you can see the code in the <a href="https://github.com/Nertsal/stecs/blob/main/examples/full.rs">example</a>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>That was a rough introduction into what I've been working on lately. If you like the idea and still want to see more, I also have a jam game made with this library: <a href="https://github.com/Nertsal/horns-of-combustion/tree/dev">Horns of Combustion</a>.</p>
+<p>See the project on <a href="https://github.com/Nertsal/stecs">GitHub</a> and <a href="https://crates.io/crates/stecs">crates.io</a>.</p>
+
+  </div>
+</div>
+
+
+      <div class="container" style="padding: 0.5em; display: flex;">
+        <a href="https://github.com/nertsal/" style="color:white;margin:0.5em;">
+          <i class="fa-brands fa-github fa-3x"></i>
+        </a>
+        <a href="https://nertsal.itch.io/" style="color:white;margin:0.5em;">
+          <i class="fa-brands fa-itch-io fa-3x"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
