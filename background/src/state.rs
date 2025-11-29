@@ -1,6 +1,6 @@
 use crate::{
-    geometry::{self, CrossSectionVertex, Plane, Triangle, Vertex},
     Assets,
+    geometry::{self, CrossSectionVertex, Plane, Triangle, Vertex},
 };
 
 use geng::prelude::*;
@@ -66,7 +66,7 @@ impl State {
             camera2d: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
-                fov: 10.0,
+                fov: Camera2dFov::Horizontal(17.0),
             },
             objects: Vec::new(),
             prefabs: vec![prefab(geometry::unit_cube_triangulated())],
@@ -77,8 +77,8 @@ impl State {
 
     pub fn view(&self) -> Aabb2<f32> {
         let view = vec2(
-            self.camera2d.fov * self.framebuffer_size.as_f32().aspect(),
-            self.camera2d.fov,
+            self.camera2d.fov.value(),
+            self.camera2d.fov.value() / self.framebuffer_size.as_f32().aspect(),
         );
         Aabb2::point(self.camera2d.center).extend_symmetric(view)
     }
