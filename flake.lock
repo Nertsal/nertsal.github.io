@@ -87,16 +87,17 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1757338443,
-        "narHash": "sha256-yVJhogbXBlCdhUGR3qMiNcphXr9UrSkLfk3Ngnxnv7o=",
+        "lastModified": 1766063911,
+        "narHash": "sha256-8iEp7CneSX8zZouC1Lu5UR/4rJTT30eP7xGilfhk5cI=",
         "owner": "geng-engine",
         "repo": "cargo-geng",
-        "rev": "aa2c2242d7024734f3d5f6e5c9879a19c01b100a",
+        "rev": "e5ed1324056150c2768dfb239c0ee79244a11fc2",
         "type": "github"
       },
       "original": {
         "owner": "geng-engine",
         "repo": "cargo-geng",
+        "rev": "e5ed1324056150c2768dfb239c0ee79244a11fc2",
         "type": "github"
       }
     },
