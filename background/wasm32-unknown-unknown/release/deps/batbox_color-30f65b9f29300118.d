@@ -1,0 +1,12 @@
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/batbox_color-30f65b9f29300118.d: /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/lib.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/component.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/consts.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsl.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsv.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/rgba.rs
+
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libbatbox_color-30f65b9f29300118.rlib: /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/lib.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/component.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/consts.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsl.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsv.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/rgba.rs
+
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libbatbox_color-30f65b9f29300118.rmeta: /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/lib.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/component.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/consts.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsl.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsv.rs /usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/rgba.rs
+
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/lib.rs:
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/component.rs:
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/consts.rs:
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsl.rs:
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/hsv.rs:
+/usr/local/cargo/git/checkouts/batbox-7010187253b31945/bb42034/crates/color/src/rgba.rs:
