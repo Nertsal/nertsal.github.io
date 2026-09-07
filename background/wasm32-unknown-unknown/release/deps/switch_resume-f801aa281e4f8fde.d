@@ -1,0 +1,10 @@
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/switch_resume-f801aa281e4f8fde.d: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libswitch_resume-f801aa281e4f8fde.rlib: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/__w/nertsal.github.io/nertsal.github.io/background/target/wasm32-unknown-unknown/release/deps/libswitch_resume-f801aa281e4f8fde.rmeta: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs
+
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/lib.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../README.md:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/simple.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/switch-resume-0.1.3/src/../examples/foobar.rs:
